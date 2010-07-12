@@ -1,0 +1,56 @@
+
+Version 0.5.0: 2010-07-12
+
+	- submit to CRAN.
+
+
+Version 0.4.0: 2010-07-09
+
+	- added print methods for all S3 classes.
+
+	- rvgt.ftable(), uerror() and xerror() now have a 
+	  new argument 'trunc'.
+
+	- class 'rvgt.ierror' now also contains arrays 'mad' and 'mse'
+          for the mean absolute deviation and the mean squared error, resp.
+
+	- plot.rvgt.ierror() now accepts NA for argument 'tol'.
+          This is equivalent to not providing the argument at all.
+
+
+Version 0.3.2: 2010-07-01
+
+	- function rvgt.ftable() now also accepts NULL for
+	  arguments 'qdist' and 'pdist'. This is equivalent
+	  to not providing the argument at all.
+
+
+Version 0.3.1: 2010-06-15
+
+	- added vignette.
+
+
+Version 0.3.0: 2010-05-31
+
+	- added new functions for analysing numerical errors of
+	  approximate inverse distribution functions:
+
+	  . uerror()
+	  . xerror()
+	  . plot.ierror()
+
+	- function rvgt.ftable():
+
+	  . argument 'breaks' now accepts vector of break points
+	  . new argument 'exactu'
+	  
+	- renamed functions:
+	  
+	  . rvgt.pertadd() --> pertadd()
+	  . rvgt.pertsub() --> pertsub()
+ 
+
+Version 0.2.1: 2009-10-28
+
+	- first public release.
+
