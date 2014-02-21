@@ -15,8 +15,8 @@
   \tabular{ll}{
     Package: \tab rvgtest\cr
     Type:    \tab Package\cr
-    Version: \tab 0.5.0         \cr
-    Date:    \tab 2010-07-12    \cr
+    Version: \tab 0.7.2         \cr
+    Date:    \tab 2014-02-21    \cr
     License: \tab GPL 2 or later\cr
     LazyLoad:\tab yes\cr
   }
@@ -65,7 +65,7 @@
   sample sizes (which are only limited by the available runtimes).
 
   Currently there are two toolsets for testing random variate generators
-  for \emph{continuous univariate distributions}:
+  for \emph{univariate distributions}:
   \enumerate{
     \item Testing based on histograms for all kinds of RVGs.
     \item Estimating errors of RVGs that are based on numerical
@@ -74,7 +74,7 @@
 }
 
 \section{1. Histograms}{
-  A frequently used method for testing continuous univariate
+  A frequently used method for testing univariate
   distributions is based on the following strategy:
   Draw a sample, compute a histogram and run a goodness-of-fit test on
   the resulting frequency table.

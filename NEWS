@@ -1,7 +1,37 @@
 
+Version 0.7.2: 2014-02-21
+
+	- submitted to CRAN.
+
+
+Version 0.7.1: 2013-10-08
+
+	- moved inst/doc/ into vignettes/.
+
+
+Version 0.7.0: 2013-07-30
+
+	- rvgt.ftable(): fixed handling of discrete random number 
+          generators (like rgeom()) that return numbers of class 
+	  "integer" instead of "numeric".
+
+	- testsuite: replaced 'RUnit' by 'testthat'. 
+
+
+Version 0.6.0: 2012-02-02
+
+	- rvgt.ftable(), uerror() and xerror() now accept a
+	  generator object from the 'Runuran' package as argument 
+	  'rdist'.
+
+	- rvgt.ftable(): argument 'n' must be >= 100.
+
+	- rvgt.ftable(): added support for discrete distributions.
+
+
 Version 0.5.0: 2010-07-12
 
-	- submit to CRAN.
+	- submitted to CRAN.
 
 
 Version 0.4.0: 2010-07-09

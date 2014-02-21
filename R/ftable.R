@@ -13,7 +13,7 @@ rvgt.ftable <- function (n, rep=1, rdist, qdist, pdist, ...,
   ## ------------------------------------------------------------------------
   ## n      : Size of random sample at each repetition
   ## rep    : Number of repetitions
-  ## rdist  : Random variate generator  
+  ## rdist  : Random variate generator: a function or an object of class "unuran"
   ## qdist  : Quantile function of distribution
   ## pdist  : Cumulative distribution function of distribution
   ## ....   : Parameters of distribution
@@ -21,7 +21,7 @@ rvgt.ftable <- function (n, rep=1, rdist, qdist, pdist, ...,
   ##          a vector giving the breakpoints between histogram cells
   ##          (in u-scale)
   ## trunc  : boundaries of truncated domain 
-  ## exactu : Whether exact locatoon of break points in u-scale must be used.
+  ## exactu : Whether exact location of break points in u-scale must be used.
   ##          If FALSE, then break points are slightly moved in order of
   ##          faster runtimes (this does not effect correctness of the
   ##          frequency table.)
@@ -35,11 +35,18 @@ rvgt.ftable <- function (n, rep=1, rdist, qdist, pdist, ...,
   ##   frequencies of sample of size n
   ## ------------------------------------------------------------------------
 {
-  
+  ## --- constants ----------------------------------------------------------
+
+  min.bin.width <- 1e-12   ## minimal width for bins
+
+  ## --- variables ----------------------------------------------------------
+
+  dtype <- NULL
+
   ## --- check arguments ----------------------------------------------------
 
   ## sample size
-  if (missing(n) || !is.numeric(n) || n<1 || n!=round(n))
+  if (missing(n) || !is.numeric(n) || n<100 || n!=round(n))
     stop ("Argument 'n' missing or invalid.")
 
   ## number of repetitions
@@ -47,9 +54,34 @@ rvgt.ftable <- function (n, rep=1, rdist, qdist, pdist, ...,
     stop ("Invalid argument 'rep'.")
 
   ## random variate generator
-  if (missing(rdist) || !is.function(rdist))
-    stop ("Argument 'rdist' missing or invalid.")
+  if (missing(rdist))
+    stop ("Argument 'rdist' missing.")
 
+  if (is.function(rdist)) {
+    ## R function
+    myrdist <- function(size) { rdist(size,...) }
+  }
+  else if (is(rdist,"unuran")) {
+    ## "unuran" object
+    ## Remark: We assume that package 'Runuran' is already loaded
+    ##    because it is required to create an object of class "unuran".
+    ## However, we need an object that contains a
+    ## univariate continuous distribution.
+
+    ## store type of distribution
+    dtype <- unuran.distr.class(rdist)
+
+    ## check type of distribution
+    if (! (dtype == "cont" || dtype == "discr"))
+      stop ("Argument 'rdist' is object of class 'unuran' of invalid distribution type.")
+
+    ## define sampling routine
+    myrdist <- function(size) { ur(unr=rdist, size) }
+  }
+  else {
+    stop ("Argument 'rdist' invalid.")
+  }
+  
   ## quantile and distribution function
   if (missing(qdist)) qdist <- NULL
   if (missing(pdist)) pdist <- NULL
@@ -102,10 +134,8 @@ rvgt.ftable <- function (n, rep=1, rdist, qdist, pdist, ...,
     if (breaks < 3) 
       stop (paste("Number of break points too small (less than 3):",breaks))
 
-    ## number of bins
-    nbins <- breaks-1
     ## equidistributed break points for uniform scale
-    ubreaks <- (0:nbins)/nbins
+    ubreaks <- (0:(breaks-1))/(breaks-1)
   }
 
   ## case: vector of break points (in u-scale)
@@ -114,28 +144,114 @@ rvgt.ftable <- function (n, rep=1, rdist, qdist, pdist, ...,
       stop (paste("Number of break points too small (less than 3):",length(breaks)))
     if (min(breaks)<0 || max(breaks)>1)
       stop ("break points out of range [0,1]")
-    ## number of bins
-    nbins <- length(breaks)-1
+
     ## the break points must be sorted
     ubreaks <- sort(breaks)
-
-    ## differences must be strictly positive
-    probs = ubreaks[-1] - ubreaks[-length(ubreaks)]
-    if (!all(probs>0))
-      stop ("break points invalid: length of histogram cells must not be 0")
     ## first and last break point must be 0 and 1, resp.
     ubreaks[1] <- 0
     ubreaks[length(ubreaks)] <- 1
+
+    ## differences must be strictly positive
+    if (! all(diff(ubreaks)>0))
+      stop ("break points invalid: length of histogram cells must be greater than 0")
   }
 
-  ## --- compute break points in x-scale ------------------------------------
+  ## number of bins
+  nbins <- length(ubreaks)-1
 
-  ## do we have a quantile function?
-  if (!is.null(qdist))
+  if (nbins > 1e9)
+    stop ("Argument 'breaks': too many bins (> 1e9).")
+
+  ## --- pre-sample and type of distribution --------------------------------
+
+  ## random sample of size n
+  ## ("pre-sample" required to get some information about the distribution)
+  X <- myrdist(n)
+
+  ## estimate distribution type
+  if (is.null(dtype)) {
+    tmp <- X[1:100]
+    if (isTRUE(all.equal(tmp,round(tmp))) && isTRUE(all(tmp<1e6))) {
+      dtype <- "discr"
+    } else {
+      dtype <- "cont"
+    }
+  }
+
+  ## check given data again
+  if (dtype=="discr") {
+    if(isTRUE(exactu)) {
+      warning("Argument 'exactu' ignored for discrete distributions.")
+      exactu <- FALSE
+    }
+    if (is.null(pdist)) {
+      stop ("Argument 'pdist' required for discrete distribution.")
+    }
+    if (!is.null(qdist)) {
+      warning("Argument 'qdist' ignored for discrete distributions.")
+      qdist <- NULL
+    }
+  }
+  
+  ## --- 'qdist' given: compute break points in x-scale ---------------------
+
+  if (! is.null(qdist)) {
     xbreaks <- qdist(ubreaks,...)
-  else
-    xbreaks <- rep(NA,nbins+1)
+  }
+  
+  ## --- 'qdist' not given: recompute break points in u- and x-scale --------
+  
+  if (is.null(qdist)) {
 
+    if (! isTRUE(exactu)) {
+      ## it is faster to have break points in x-scale.
+      ## if allowed we use the empirial quantiles of the first sample
+      ## and recompute the break points in u-scale.
+
+      ## compute empirial quantiles
+      xbreaks <- quantile(X, probs=ubreaks, na.rm=TRUE)
+      names(xbreaks) <- NULL
+      xbreaks[1]       <- if (is.null(trunc)) -Inf else trunc[1]
+      xbreaks[nbins+1] <- if (is.null(trunc))  Inf else trunc[2]
+
+      ## adjust break points in u-scale
+      ubreaks <- pdist(xbreaks,...)
+      ubreaks[ubreaks<0] <- 0
+      ubreaks[ubreaks>1] <- 1
+      
+    } else {
+      ## break points in x-scale not available
+      xbreaks <- rep(NA,length(ubreaks))
+    }
+  }
+    
+  ## --- check probabilities ------------------------------------------------
+
+  ## we have problems when expected probabilities are too small.
+  ## however, this may happens for discrete random variates.
+  ## thus we collapse the corresponding bins.
+
+  ## expected probabilities
+  p0 <- diff(ubreaks)
+
+  ## find bins which are "too small"
+  too.small <- which(p0<min.bin.width)
+  
+  if (length(too.small)>0) {
+    ## collapse bins
+    if (dtype != "discr")
+      warning("probability for some bins too small --> collapse bins.")
+
+    ubreaks <- ubreaks[-too.small]
+    ubreaks[length(ubreaks)] <- 1
+
+    xbreaks.max <- xbreaks[length(xbreaks)]
+    xbreaks <- xbreaks[-too.small]
+    xbreaks[length(xbreaks)] <- xbreaks.max
+
+    nbins <- length(ubreaks)-1
+  }
+  
   ## --- compute frequency tables -------------------------------------------
 
   ## table for storing frequencies
@@ -143,26 +259,17 @@ rvgt.ftable <- function (n, rep=1, rdist, qdist, pdist, ...,
      
   ## loop for each row of table
   for (i in 1:rep) {
-    ## random sample of size n
-    x <- rdist(n,...)
 
-    ## it is faster to have break points in x-scale.
-    ## if allowed we use the empirial quantiles of the first sample
-    ## and recompute the break points in u-scale.
-    if (i==1 && !isTRUE(exactu) && all(is.na(xbreaks))) {
-      xbreaks <- quantile(x, probs=ubreaks, na.rm=TRUE)
-      names(xbreaks) <- NULL
-      xbreaks[1]       <- if (is.null(trunc)) -Inf else trunc[1]
-      xbreaks[nbins+1] <- if (is.null(trunc))  Inf else trunc[2]
-      ubreaks <- pdist(xbreaks,...)
-      ubreaks[ubreaks<0] <- 0
-      ubreaks[ubreaks>1] <- 1
-    }
+    ## random sample of size n
+    ## (for i==0 we reuse the pre-sample)
+    if (i>1) X <- myrdist(n)
+    ## X must be of class "numeric"
+    if (is.integer(X)) { X <- as.numeric(X) }
 
     ## get row
-    if (!all(is.na(xbreaks))) {
+    if (! is.na(xbreaks[1])) {
       ## we can construct the histogram using the x-values
-      count[i,] <- .Call("rvgt_bincount",x,xbreaks,PACKAGE="rvgtest")
+      count[i,] <- .Call("rvgt_bincount",X,xbreaks,PACKAGE="rvgtest")
     }
     else {
       ## otherwise we first have to transform the x-values into
@@ -170,7 +277,7 @@ rvgt.ftable <- function (n, rep=1, rdist, qdist, pdist, ...,
       ## (slower but more robust for densities with poles)
 
       ## get frequency table (using function hist)
-      u <- pdist(x,...)
+      u <- pdist(X,...)
       count[i,] <- .Call("rvgt_bincount",u,ubreaks,PACKAGE="rvgtest")
     }
   }
@@ -178,7 +285,7 @@ rvgt.ftable <- function (n, rep=1, rdist, qdist, pdist, ...,
   ## --- prepare result -----------------------------------------------------
 
   ## return result as object of class "rvgt.ftable"
-  ftable <- list(n=n,rep=rep,ubreaks=ubreaks,xbreaks=xbreaks,count=count)
+  ftable <- list(n=n,rep=rep,ubreaks=ubreaks,xbreaks=xbreaks,count=count,dtype=dtype)
   class(ftable) <- "rvgt.ftable"
 
   ## plot histogram
