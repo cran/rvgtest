@@ -213,9 +213,6 @@ test_that("[ft-i15] calling rvgt.ftable with invalid arguments: breaks", {
         msg <- "Number of break points too small"
         expect_error(rvgt.ftable(n=100, rdist=rnorm, qdist=qnorm, breaks=2),                  msg)
 
-        msg <- "cannot allocate vector of size"
-        expect_error(rvgt.ftable(n=100, rdist=rnorm, qdist=qnorm, breaks=2e9),                msg)
-
         msg <- "Number of break points too small"
         expect_error(rvgt.ftable(n=100, rdist=rnorm, qdist=qnorm, breaks=c(0,1)),             msg)
 

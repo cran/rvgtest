@@ -1,6 +1,6 @@
-1576180bfbb6f558a1b8c28f45669338 *DESCRIPTION
+e31383c0e4735956af0301de0bbd94cb *DESCRIPTION
 c37d386cf9a3dc2ef14028942af26a72 *NAMESPACE
-de44d5c488a5665da371bfa35f223bb4 *NEWS
+d2a5adc74137b45c6e4194a5b202ef68 *NEWS
 a1340f11cc1205112642b35a9e69bb9e *R/Mtest.R
 1c5b729ede751d2708e0c6154a3ebfb9 *R/chisq.R
 e631c62293b8a7907fee7a3b7738a663 *R/common.R
@@ -16,12 +16,12 @@ f5c7aa5197b091b39370468561f8be7a *R/zzz.R
 96f8bffaa3480d763d6a3a6df62e2494 *build/vignette.rds
 2088dcc2a118d917763230406e031755 *inst/doc/rvgtest.R
 7d2a8db0de5795731f029c2bc645a4a8 *inst/doc/rvgtest.Rnw
-7742c350ad1ac6e376990ac4758cf79c *inst/doc/rvgtest.pdf
+dffdd74e39c7e552d942d12d871b4b4a *inst/doc/rvgtest.pdf
 e1fc3376b1fca8152e40876f8ed026b3 *inst/unittests/Makefile
 49f4bdd4287c037dce754354462db411 *inst/unittests/helper_alltests.R
 19b50678ba9e3902708364170f8d89f2 *inst/unittests/runalltests.R
 11debc9d748290b58a81208cb4fc3be5 *inst/unittests/test_Runuran.R
-0eb7c764bc296f57cc95540fac4e85a4 *inst/unittests/test_ftable.R
+d87b1e4ac572a9c54e80c400182cb533 *inst/unittests/test_ftable.R
 ff95b77786f42d0d26c699c72ec711c1 *inst/unittests/test_htest.R
 a3791a314259792021cfd49038656b3f *inst/unittests/test_ierror.R
 b858ffaed66af3d34f31451455f71db3 *man/Mtest.Rd
@@ -31,7 +31,7 @@ d4940f71bc18789b8f29d06fb6726ba4 *man/ftable.Rd
 812958eb1a73f8536cbfd71214be0f59 *man/plot.ftable.Rd
 1f07383e8eb81db65f9d1fa208fee93c *man/plot.htest.Rd
 4ace571d4880abcaeca1f54500043607 *man/plot.ierror.Rd
-39bc292b1d93949846175d5061b03aaf *man/rvgtest-package.Rd
+ebf6f3ee35a17a466fcfa2c30bb12a2c *man/rvgtest-package.Rd
 17ad3853ee333753393ca329faff5794 *man/uerror.Rd
 e367d8e4066d229e5338c9b51657237e *man/xerror.Rd
 7ad1724337628440858ccfa49e7bc5ac *src/bincount.c
@@ -41,5 +41,5 @@ d2b96adda3e2fa7fe1213cacfd6df742 *tests/dotestthat.R
 bad98cc5fee5658f78e88006974e2fdd *vignettes/inputs/intro.Rnw
 36a504bb4822ae222f5c4b36d6d7ead5 *vignettes/inputs/inversion.Rnw
 3efe852e0f091e5b94588510385761bc *vignettes/inputs/title.tex
-f8669af280d6533837496478b9312ec2 *vignettes/inputs/version.tex
+a7d40578afb5f700ef5ca1ef0bd98c82 *vignettes/inputs/version.tex
 7d2a8db0de5795731f029c2bc645a4a8 *vignettes/rvgtest.Rnw
